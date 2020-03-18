@@ -1,32 +1,16 @@
-#import <Cephei/HBPreferences.h>
-#import "SparkColourPickerUtils.h"
+@interface UILabel ()
+- (void)mt_removeAllVisualStyling;
+@end
 
-HBPreferences *pref;
-
-BOOL disableNotificationsFromShortcuts;
-BOOL oneListNotifications;
-BOOL easyNotificationSwiping;
-BOOL hideDNDNotification;
-BOOL hideNoOlderNotifications;
-BOOL showExactTimePassed;
-
-BOOL colorizeBackground;
-BOOL customBackgroundColorEnabled;
-NSString *customBackgroundColorString;
-UIColor *customBackgroundColor;
-
-BOOL colorizeBorder;
-BOOL customBorderColorEnabled;
-NSString *customBorderColorString;
-UIColor *customBorderColor;
-
-NSInteger notificationCorner;
-NSInteger borderWidth;
+@interface MTVisualStylingProvider : NSObject
+- (void)stopAutomaticallyUpdatingView:(id)arg1;
+@end
 
 @interface PLPlatterHeaderContentView: UIView
 - (void)_updateTextAttributesForDateLabel;
 @property(getter=_titleLabel, nonatomic, readonly) UILabel *titleLabel;
 @property(getter=_dateLabel, nonatomic, readonly) UILabel *dateLabel;
+@property(nonatomic, retain) UIColor *dateColor;
 @end
 
 @interface PLPlatterView : UIView
@@ -35,10 +19,15 @@ NSInteger borderWidth;
 @interface PLTitledPlatterView : PLPlatterView
 @end
 
+@interface BSUIEmojiLabelView: UIView
+@property(nonatomic, readonly) UILabel *contentLabel;
+@end
+
 @interface NCNotificationContentView: UIView
 @property(setter=_setPrimaryLabel:, getter=_primaryLabel, nonatomic, retain) UILabel *primaryLabel;                         //@synthesize primaryLabel=_primaryLabel - In the implementation block
 @property(setter=_setPrimarySubtitleLabel:, getter=_primarySubtitleLabel, nonatomic, retain) UILabel *primarySubtitleLabel; //@synthesize primarySubtitleLabel=_primarySubtitleLabel - In the implementation block
 @property(getter=_secondaryLabel, nonatomic, readonly) UILabel *secondaryLabel;
+@property(setter=_setSummaryLabel:, getter=_summaryLabel, nonatomic, retain) BSUIEmojiLabelView *summaryLabel;
 @end
 
 @interface NCNotificationRequest : NSObject
@@ -81,6 +70,7 @@ NSInteger borderWidth;
 
 @interface NCNotificationListCellActionButton : UIControl
 @property(nonatomic, retain) MTMaterialView *backgroundView;
+@property(nonatomic, retain) UILabel *titleLabel;
 @end
 
 @interface NCNotificationListCellActionButtonsView : UIView
@@ -99,6 +89,6 @@ NSInteger borderWidth;
 @property(nonatomic, retain) NCNotificationListCellActionButtonsView *leftActionButtonsView;
 @end
 
-@interface NCNotificationListSectionRevealHintView : UIView
+@interface NCNotificationListSectionRevealHintView: UIView
 @property (nonatomic, assign, readwrite, getter = isHidden) BOOL hidden;
 @end
