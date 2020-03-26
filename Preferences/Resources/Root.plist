@@ -26,18 +26,6 @@
 			<key>defaults</key>
 			<string>com.johnzaro.perfectnotifications13prefs</string>
 			<key>key</key>
-			<string>disableNotificationsFromShortcuts</string>
-			<key>label</key>
-			<string>No Notifs From Shortcuts App</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>com.johnzaro.perfectnotifications13prefs</string>
-			<key>key</key>
 			<string>oneListNotifications</string>
 			<key>label</key>
 			<string>One List Of Notifications</string>
@@ -53,18 +41,6 @@
 			<string>easyNotificationSwiping</string>
 			<key>label</key>
 			<string>Easy Notification Swiping</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>com.johnzaro.perfectnotifications13prefs</string>
-			<key>key</key>
-			<string>hideDNDNotification</string>
-			<key>label</key>
-			<string>Hide DND Notification</string>
 		</dict>
 		<dict>
 			<key>cell</key>
