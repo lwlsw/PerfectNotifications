@@ -30,16 +30,16 @@
 @property(setter=_setSummaryLabel:, getter=_summaryLabel, nonatomic, retain) BSUIEmojiLabelView *summaryLabel;
 @end
 
-@interface NCNotificationRequest : NSObject
-- (NSString *)sectionIdentifier;
-@end
-
 @interface BSUIRelativeDateLabel
 @property(assign, nonatomic) NSString *text;
 - (void)sizeToFit;
 @end
 
 @interface NCNotificationListStalenessEventTracker : NSObject
+@end
+
+@interface NCNotificationStructuredSectionList : NSObject
+- (void)clearAllNotificationRequests;
 @end
 
 @interface NCNotificationMasterList : NSObject
@@ -50,6 +50,11 @@
 -(BOOL)_isNotificationRequestForHistorySection:(id)arg1;
 -(void)_migrateNotificationsFromList:(id)arg1 toList:(id)arg2 passingTest:(/*^block*/id)arg3 hideToList:(BOOL)arg4 clearRequests:(BOOL)arg5;
 -(void)migrateNotifications;
+- (NCNotificationStructuredSectionList *)incomingSectionList;
+@end
+
+@interface NCNotificationStructuredListViewController : UIViewController
+- (NCNotificationMasterList *)masterList;
 @end
 
 @interface NCNotificationShortLookView: PLTitledPlatterView

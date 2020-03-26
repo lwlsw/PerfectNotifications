@@ -26,6 +26,18 @@
 			<key>defaults</key>
 			<string>com.johnzaro.perfectnotifications13prefs</string>
 			<key>key</key>
+			<string>pullToDismissNotifications</string>
+			<key>label</key>
+			<string>Pull Down To Dismiss All</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.perfectnotifications13prefs</string>
+			<key>key</key>
 			<string>oneListNotifications</string>
 			<key>label</key>
 			<string>One List Of Notifications</string>

@@ -4,6 +4,7 @@
 #import "SparkColourPickerUtils.h"
 
 static HBPreferences *pref;
+static BOOL pullToDismissNotifications;
 static BOOL oneListNotifications;
 static BOOL easyNotificationSwiping;
 static BOOL hideNoOlderNotifications;
@@ -79,6 +80,29 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 }
 
 @end
+
+// ------------------------------ PULL DOWN TO DISMISS NOTIFICATIONS ------------------------------
+
+%group pullToDismissNotificationsGroup
+
+	%hook CSCombinedListViewController
+
+	- (void)scrollViewWillEndDragging: (id)arg1 withVelocity: (CGPoint)arg2 targetContentOffset: (CGPoint*)arg3
+	{
+		%orig;
+
+		if(arg2.y < -2.0)
+		{
+			NCNotificationStructuredListViewController *structuredListViewController = MSHookIvar<NCNotificationStructuredListViewController*>(self, "_structuredListViewController");
+			NCNotificationMasterList *masterList = [structuredListViewController masterList];
+			NCNotificationStructuredSectionList *incomingSectionList = [masterList incomingSectionList];
+			[incomingSectionList clearAllNotificationRequests];
+		}
+	}
+
+	%end
+
+%end
 
 // ------------------------------ ONE LIST OF NOTIFICATIONS ------------------------------
 
@@ -429,6 +453,7 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 		pref = [[HBPreferences alloc] initWithIdentifier: @"com.johnzaro.perfectnotifications13prefs"];
 		[pref registerDefaults:
 		@{
+			@"pullToDismissNotifications": @NO,
 			@"oneListNotifications": @NO,
 			@"easyNotificationSwiping": @NO,
 			@"hideNoOlderNotifications": @NO,
@@ -443,6 +468,7 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 			@"notificationCorner": @12
     	}];
 
+		pullToDismissNotifications = [pref boolForKey: @"pullToDismissNotifications"];
 		oneListNotifications = [pref boolForKey: @"oneListNotifications"];
 		easyNotificationSwiping = [pref boolForKey: @"easyNotificationSwiping"];
 		hideNoOlderNotifications = [pref boolForKey: @"hideNoOlderNotifications"];
@@ -469,6 +495,7 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 
 		}
 
+		if(pullToDismissNotifications) %init(pullToDismissNotificationsGroup);
 		if(oneListNotifications) %init(oneListNotificationsGroup);
 		if(easyNotificationSwiping) %init(easyNotificationSwipingGroup);
 		if(hideNoOlderNotifications) %init(hideNoOlderNotificationsGroup);
