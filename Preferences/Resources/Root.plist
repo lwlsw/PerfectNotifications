@@ -275,7 +275,7 @@
 			<key>singularLabel</key>
 			<string>1 Pixel</string>
 			<key>max</key>
-			<real>30</real>
+			<real>50</real>
 			<key>min</key>
 			<real>0</real>
 		</dict>
