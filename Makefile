@@ -7,11 +7,11 @@ GO_EASY_ON_ME = 1
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = PerfectNotifications13
-PerfectNotifications13_FILES = PerfectNotifications13.xm
-PerfectNotifications13_CFLAGS = -fobjc-arc
-PerfectNotifications13_LIBRARIES = sparkcolourpicker
-PerfectNotifications13_EXTRA_FRAMEWORKS += Cephei
+TWEAK_NAME = PerfectNotifications
+PerfectNotifications_FILES = PerfectNotifications.xm
+PerfectNotifications_CFLAGS = -fobjc-arc -Wno-logical-op-parentheses
+PerfectNotifications_LIBRARIES = sparkcolourpicker
+PerfectNotifications_EXTRA_FRAMEWORKS += Cephei
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

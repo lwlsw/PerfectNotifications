@@ -1,9 +1,10 @@
-#include "PerfectNotifications13.h"
+#include "PerfectNotifications.h"
 
 #import <Cephei/HBPreferences.h>
 #import "SparkColourPickerUtils.h"
 
 static HBPreferences *pref;
+static BOOL enabled;
 static BOOL pullToDismissNotifications;
 static BOOL oneListNotifications;
 static BOOL easyNotificationSwiping;
@@ -12,14 +13,22 @@ static BOOL showExactTimePassed;
 static BOOL colorizeBackground;
 static BOOL customBackgroundColorEnabled;
 static UIColor *customBackgroundColor;
+static float backgroundAlpha;
 static BOOL colorizeBorder;
 static BOOL customBorderColorEnabled;
 static UIColor *customBorderColor;
+static float borderAlpha;
 static BOOL colorizeText;
 static BOOL customTextColorEnabled;
 static UIColor *customTextColor;
 static NSInteger notificationCorner;
 static NSInteger borderWidth;
+static BOOL disableTopLeftCornerRadius;
+static BOOL disableTopRightCornerRadius;
+static BOOL disableBottomLeftCornerRadius;
+static BOOL disableBottomRightCornerRadius;
+
+int cornerMask = 0;
 
 // --------------------------------------------------------------------------
 // --------------------- METHODS FOR CHOOSING COLORS ------------------------
@@ -174,9 +183,9 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 
 	%hook NCNotificationListSectionRevealHintView
 
-	-(void)setFrame:(CGRect)arg1
+	- (void)setFrame: (CGRect)arg1
 	{
-		self.hidden = YES;
+		[self setHidden: YES];
 	}
 
 	%end
@@ -191,7 +200,7 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 
 	%hook PLPlatterHeaderContentView
 
-	-(void)_updateTextAttributesForDateLabel
+	- (void)_updateTextAttributesForDateLabel
 	{
 		%orig;
 		
@@ -215,19 +224,19 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 
 			if(hours != 0 || minutes != 0)
 			{
-				dateLabel.text = @"";
-				if(isFuture) dateLabel.text = [dateLabel.text stringByAppendingString: [NSString stringWithFormat: @"in"]];
-				if(hours != 0) dateLabel.text = [dateLabel.text stringByAppendingString: [NSString stringWithFormat: @" %ih", hours]];
-				if(minutes != 0) dateLabel.text = [dateLabel.text stringByAppendingString: [NSString stringWithFormat: @" %im", minutes]];
-				if(!isFuture) dateLabel.text = [dateLabel.text stringByAppendingString: [NSString stringWithFormat: @" ago"]];
+				[dateLabel setText: @""];
+				if(isFuture) [dateLabel setText: [[dateLabel text] stringByAppendingString: [NSString stringWithFormat: @"in"]]];
+				if(hours != 0) [dateLabel setText: [[dateLabel text] stringByAppendingString: [NSString stringWithFormat: @" %ih", hours]]];
+				if(minutes != 0) [dateLabel setText: [[dateLabel text] stringByAppendingString: [NSString stringWithFormat: @" %im", minutes]]];
+				if(!isFuture) [dateLabel setText: [[dateLabel text] stringByAppendingString: [NSString stringWithFormat: @" ago"]]];
 			}
-			dateLabel.text = [[dateLabel.text stringByAppendingString: @" • "] stringByAppendingString: [dateFormatter stringFromDate: date]];
+			[dateLabel setText: [[[dateLabel text] stringByAppendingString: @" • "] stringByAppendingString: [dateFormatter stringFromDate: date]]];
 			
 			[dateLabel sizeToFit];
 		}
 	}
 		
-	-(void)dateLabelDidChange:(id)arg1
+	- (void)dateLabelDidChange: (id)arg1
 	{
 		%orig(arg1);
 		[self _updateTextAttributesForDateLabel];
@@ -250,7 +259,7 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 	{
 		%orig;
 
-		if(self.iconButtons)
+		if([self iconButtons])
 		{
 			UIColor *backgroundColor;
 			UIColor *borderColor;
@@ -259,11 +268,13 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 			if(colorizeBackground || colorizeBorder && !customBorderColorEnabled || colorizeText && !customTextColorEnabled || !colorizeText)
 			{
 				if(customBackgroundColorEnabled) backgroundColor = customBackgroundColor;
-				else backgroundColor = [((UIButton*)self.iconButtons[0]).currentImage mergedColor];
+				else backgroundColor = [[((UIButton*)[self iconButtons][0]) currentImage] mergedColor];
 			}
 
 			if(backgroundColor)
 			{
+				backgroundColor = [backgroundColor colorWithAlphaComponent: backgroundAlpha];
+
 				if(colorizeText)
 				{
 					if(customTextColorEnabled) textColor = customTextColor;
@@ -273,24 +284,26 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 				
 				// Colorize header Title & Date
 				PLPlatterHeaderContentView *headerContentView = MSHookIvar<PLPlatterHeaderContentView*>(self, "_headerContentView");
-				[headerContentView.titleLabel mt_removeAllVisualStyling];
-				headerContentView.titleLabel.textColor = textColor;
-				[headerContentView.dateLabel mt_removeAllVisualStyling];
-				headerContentView.dateLabel.textColor = textColor;
-				headerContentView.dateColor = textColor;
+				[[headerContentView _titleLabel] mt_removeAllVisualStyling];
+				[[headerContentView _titleLabel] setTextColor: textColor];
+				[[headerContentView _dateLabel] mt_removeAllVisualStyling];
+				[[headerContentView _dateLabel] setTextColor: textColor];
+				[headerContentView setDateColor: textColor];
 
 				// Colorize content
 				NCNotificationContentView *notificationContentView = MSHookIvar<NCNotificationContentView*>(self, "_notificationContentView");
-				notificationContentView.primaryLabel.textColor = textColor;
-				notificationContentView.primarySubtitleLabel.textColor = textColor;
-				notificationContentView.secondaryLabel.textColor = textColor;
-				notificationContentView.summaryLabel.contentLabel.textColor = textColor;
-				[notificationContentView.summaryLabel.contentLabel mt_removeAllVisualStyling];
+				[[notificationContentView _primaryLabel] setTextColor: textColor];
+				[[notificationContentView _primarySubtitleLabel] setTextColor: textColor];
+				[[notificationContentView _secondaryLabel] setTextColor: textColor];
+				[[[notificationContentView _summaryLabel] contentLabel] setTextColor: textColor];
+				[[[notificationContentView _summaryLabel] contentLabel] mt_removeAllVisualStyling];
 
 				if(colorizeBorder)
 				{
 					if(customBorderColorEnabled) borderColor = customBorderColor;
 					else borderColor = getContrastColorBasedOnBackgroundColor(backgroundColor);
+
+					borderColor = [borderColor colorWithAlphaComponent: borderAlpha];
 				}
 
 				for (UIView *sbview in [self subviews])
@@ -299,14 +312,16 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 					{
 						MTMaterialView *subview = (MTMaterialView*)sbview;
 
-						subview.clipsToBounds = YES;
-						subview.layer.cornerRadius = notificationCorner;
+						[subview setClipsToBounds: YES];
+						[[subview layer] setCornerRadius: notificationCorner];
+						[[subview layer] setMaskedCorners: cornerMask];
 						
-						if(colorizeBackground) subview.backgroundColor = backgroundColor;
+						if(colorizeBackground)
+							[subview setBackgroundColor: backgroundColor];
 						if(colorizeBorder)
 						{
-							subview.layer.borderColor = borderColor.CGColor;
-							subview.layer.borderWidth = borderWidth;
+							[[subview layer] setBorderColor: borderColor.CGColor];
+							[[subview layer] setBorderWidth: borderWidth];
 						}
 
 						break;
@@ -328,7 +343,7 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 		UIColor *backgroundColor;
 		UIColor *textColor;
 
-		if(self.iconButtons)
+		if([self iconButtons])
 		{
 			PLPlatterHeaderContentView *headerContentView = MSHookIvar<PLPlatterHeaderContentView*>(self, "_headerContentView");
 			NCNotificationContentView *notificationContentView = MSHookIvar<NCNotificationContentView*>(self, "_notificationContentView");
@@ -336,19 +351,21 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 			if(colorizeBackground || colorizeText && !customTextColorEnabled || !colorizeText)
 			{
 				if(customBackgroundColorEnabled) backgroundColor = customBackgroundColor;
-				else backgroundColor = [((UIButton*)self.iconButtons[0]).currentImage mergedColor];
+				else backgroundColor = [[((UIButton*)[self iconButtons][0]) currentImage] mergedColor];
 			}
+
+			backgroundColor = [backgroundColor colorWithAlphaComponent: backgroundAlpha];
 
 			if(colorizeBackground)
 			{
-				headerContentView.clipsToBounds = YES;
-				notificationContentView.clipsToBounds = YES;
+				[headerContentView setClipsToBounds: YES];
+				[notificationContentView setClipsToBounds: YES];
 				
-				headerContentView.layer.cornerRadius = 12;
-				notificationContentView.layer.cornerRadius = 12;
+				[[headerContentView layer] setCornerRadius: 12];
+				[[notificationContentView layer] setCornerRadius: 12];
 
-				headerContentView.backgroundColor = backgroundColor;
-				notificationContentView.backgroundColor = backgroundColor;
+				[headerContentView setBackgroundColor: backgroundColor];
+				[notificationContentView setBackgroundColor: backgroundColor];
 			}
 
 			if(colorizeText)
@@ -358,10 +375,10 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 			}
 			else textColor = getReadableTextColorBasedOnBackgroundColor(backgroundColor);
 
-			headerContentView.titleLabel.textColor = textColor;
-			notificationContentView.primaryLabel.textColor = textColor;
-			notificationContentView.primarySubtitleLabel.textColor = textColor;
-			notificationContentView.secondaryLabel.textColor = textColor;
+			[[headerContentView _titleLabel] setTextColor: textColor];
+			[[notificationContentView _primaryLabel] setTextColor: textColor];
+			[[notificationContentView _primarySubtitleLabel] setTextColor: textColor];
+			[[notificationContentView _secondaryLabel] setTextColor: textColor];
 		}
 	}
 
@@ -375,10 +392,10 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 		%orig;
 		if (!self) return;
 
-		NCNotificationListCell *notificationListCell = (NCNotificationListCell*)self.superview.superview.superview;
-		NCNotificationShortLookView *notificationShortlookView = ((NCNotificationShortLookView*)((NCNotificationViewControllerView*)notificationListCell.contentViewController.view).contentView);
+		NCNotificationListCell *notificationListCell = (NCNotificationListCell*)[[[self superview] superview] superview];
+		NCNotificationShortLookView *notificationShortlookView = ((NCNotificationShortLookView*)[((NCNotificationViewControllerView*)[[notificationListCell contentViewController] view]) contentView]);
 
-		if(notificationShortlookView.iconButtons)
+		if([notificationShortlookView iconButtons])
 		{
 			UIColor *backgroundColor;
 			UIColor *borderColor;
@@ -387,8 +404,10 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 			if(colorizeBackground || colorizeBorder && !customBorderColorEnabled || colorizeText && !customTextColorEnabled || !colorizeText)
 			{
 				if(customBackgroundColorEnabled) backgroundColor = customBackgroundColor;
-				else backgroundColor = [((UIButton*)notificationShortlookView.iconButtons[0]).currentImage mergedColor];
+				else backgroundColor = [[((UIButton*)[notificationShortlookView iconButtons][0]) currentImage] mergedColor];
 			}
+
+			backgroundColor = [backgroundColor colorWithAlphaComponent: backgroundAlpha];
 			
 			if(colorizeText)
 			{
@@ -401,24 +420,27 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 			{
 				if(customBorderColorEnabled) borderColor = customBorderColor;
 				else borderColor = getContrastColorBasedOnBackgroundColor(backgroundColor);
+
+				borderColor = [borderColor colorWithAlphaComponent: borderAlpha];
 			}
 
-			for(NCNotificationListCellActionButton *button in self.buttonsStackView.arrangedSubviews)
+			for(NCNotificationListCellActionButton *button in [[self buttonsStackView] arrangedSubviews])
 			{
-				MTMaterialView *backgroundView = (MTMaterialView*)button.backgroundView;
+				MTMaterialView *backgroundView = (MTMaterialView*)[button backgroundView];
 				if(!backgroundView) return;
 
-				[button.titleLabel mt_removeAllVisualStyling];
-				button.titleLabel.textColor = textColor;
+				[[button titleLabel] mt_removeAllVisualStyling];
+				[[button titleLabel] setTextColor: textColor];
 
-				backgroundView.clipsToBounds = YES;
-				backgroundView.layer.cornerRadius = notificationCorner;
+				[backgroundView setClipsToBounds: YES];
+				[[backgroundView layer] setCornerRadius: notificationCorner];
+				[[backgroundView layer] setMaskedCorners: cornerMask];
 				
-				if(colorizeBackground) backgroundView.backgroundColor = backgroundColor;
+				if(colorizeBackground) [backgroundView setBackgroundColor: backgroundColor];
 				if(colorizeBorder)
 				{
-					backgroundView.layer.borderColor = borderColor.CGColor;
-					backgroundView.layer.borderWidth = borderWidth;
+					[[backgroundView layer] setBorderColor: borderColor.CGColor];
+					[[backgroundView layer] setBorderWidth: borderWidth];
 				}
 			}
 		}
@@ -437,8 +459,8 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 
 		if(colorizeText)
 		{
-			[self.dateLabel mt_removeAllVisualStyling];
-			if(self.dateColor) self.dateLabel.textColor = self.dateColor;
+			[[self _dateLabel] mt_removeAllVisualStyling];
+			if([self _dateLabel]) [[self _dateLabel] setTextColor: [self dateColor]];
 		}
 	}
 
@@ -453,6 +475,7 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 		pref = [[HBPreferences alloc] initWithIdentifier: @"com.johnzaro.perfectnotifications13prefs"];
 		[pref registerDefaults:
 		@{
+			@"enabled": @NO,
 			@"pullToDismissNotifications": @NO,
 			@"oneListNotifications": @NO,
 			@"easyNotificationSwiping": @NO,
@@ -460,46 +483,71 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 			@"showExactTimePassed": @NO,
 			@"colorizeBackground": @NO,
 			@"customBackgroundColorEnabled": @NO,
+			@"backgroundAlpha": @1,
 			@"colorizeText": @NO,
 			@"customTextColorEnabled": @NO,
 			@"colorizeBorder": @NO,
 			@"customBorderColorEnabled": @NO,
 			@"borderWidth": @3,
-			@"notificationCorner": @12
+			@"borderAlpha": @1,
+			@"notificationCorner": @12,
+			@"disableTopLeftCornerRadius": @NO,
+			@"disableTopRightCornerRadius": @NO,
+			@"disableBottomLeftCornerRadius": @NO,
+			@"disableBottomRightCornerRadius": @NO
     	}];
 
-		pullToDismissNotifications = [pref boolForKey: @"pullToDismissNotifications"];
-		oneListNotifications = [pref boolForKey: @"oneListNotifications"];
-		easyNotificationSwiping = [pref boolForKey: @"easyNotificationSwiping"];
-		hideNoOlderNotifications = [pref boolForKey: @"hideNoOlderNotifications"];
-		showExactTimePassed = [pref boolForKey: @"showExactTimePassed"];
-		colorizeBackground = [pref boolForKey: @"colorizeBackground"];
-		customBackgroundColorEnabled = [pref boolForKey: @"customBackgroundColorEnabled"];
-		colorizeText = [pref boolForKey: @"colorizeText"];
-		customTextColorEnabled = [pref boolForKey: @"customTextColorEnabled"];
-		colorizeBorder = [pref boolForKey: @"colorizeBorder"];
-		customBorderColorEnabled = [pref boolForKey: @"customBorderColorEnabled"];
-		borderWidth = [pref integerForKey: @"borderWidth"];
-		notificationCorner = [pref integerForKey: @"notificationCorner"];
-
-		if(customBackgroundColorEnabled || customBorderColorEnabled || customTextColorEnabled)
+		enabled = [pref boolForKey: @"enabled"];
+		if(enabled)
 		{
-			NSDictionary *preferencesDictionary = [NSDictionary dictionaryWithContentsOfFile: @"/var/mobile/Library/Preferences/com.johnzaro.perfectnotifications13prefs.colors.plist"];
+			pullToDismissNotifications = [pref boolForKey: @"pullToDismissNotifications"];
+			oneListNotifications = [pref boolForKey: @"oneListNotifications"];
+			easyNotificationSwiping = [pref boolForKey: @"easyNotificationSwiping"];
+			hideNoOlderNotifications = [pref boolForKey: @"hideNoOlderNotifications"];
+			showExactTimePassed = [pref boolForKey: @"showExactTimePassed"];
+			colorizeBackground = [pref boolForKey: @"colorizeBackground"];
+			customBackgroundColorEnabled = [pref boolForKey: @"customBackgroundColorEnabled"];
+			backgroundAlpha = [pref floatForKey: @"backgroundAlpha"];
+			colorizeText = [pref boolForKey: @"colorizeText"];
+			customTextColorEnabled = [pref boolForKey: @"customTextColorEnabled"];
+			colorizeBorder = [pref boolForKey: @"colorizeBorder"];
+			customBorderColorEnabled = [pref boolForKey: @"customBorderColorEnabled"];
+			borderWidth = [pref integerForKey: @"borderWidth"];
+			borderAlpha = [pref floatForKey: @"borderAlpha"];
+			notificationCorner = [pref integerForKey: @"notificationCorner"];
+			disableTopLeftCornerRadius = [pref boolForKey: @"disableTopLeftCornerRadius"];
+			disableTopRightCornerRadius = [pref boolForKey: @"disableTopRightCornerRadius"];
+			disableBottomLeftCornerRadius = [pref boolForKey: @"disableBottomLeftCornerRadius"];
+			disableBottomRightCornerRadius = [pref boolForKey: @"disableBottomRightCornerRadius"];
 
-			if(customBackgroundColorEnabled)
-				customBackgroundColor = [SparkColourPickerUtils colourWithString: [preferencesDictionary objectForKey: @"customBackgroundColor"] withFallback: @"#FF9400"];
-			if(customTextColorEnabled)
-				customTextColor = [SparkColourPickerUtils colourWithString: [preferencesDictionary objectForKey: @"customTextColor"] withFallback: @"#A36827"];
-			if(customBorderColorEnabled)
-				customBorderColor = [SparkColourPickerUtils colourWithString: [preferencesDictionary objectForKey: @"customBorderColor"] withFallback: @"#A36827"];
+			if(!disableTopLeftCornerRadius)
+				cornerMask += kCALayerMinXMinYCorner;
+			if(!disableTopRightCornerRadius)
+				cornerMask += kCALayerMaxXMinYCorner;
+			if(!disableBottomLeftCornerRadius)
+				cornerMask += kCALayerMinXMaxYCorner;
+			if(!disableBottomRightCornerRadius)
+				cornerMask += kCALayerMaxXMaxYCorner;
 
+			if(customBackgroundColorEnabled || customBorderColorEnabled || customTextColorEnabled)
+			{
+				NSDictionary *preferencesDictionary = [NSDictionary dictionaryWithContentsOfFile: @"/var/mobile/Library/Preferences/com.johnzaro.perfectnotifications13prefs.colors.plist"];
+
+				if(customBackgroundColorEnabled)
+					customBackgroundColor = [SparkColourPickerUtils colourWithString: [preferencesDictionary objectForKey: @"customBackgroundColor"] withFallback: @"#FF9400"];
+				if(customTextColorEnabled)
+					customTextColor = [SparkColourPickerUtils colourWithString: [preferencesDictionary objectForKey: @"customTextColor"] withFallback: @"#A36827"];
+				if(customBorderColorEnabled)
+					customBorderColor = [SparkColourPickerUtils colourWithString: [preferencesDictionary objectForKey: @"customBorderColor"] withFallback: @"#A36827"];
+
+			}
+
+			if(pullToDismissNotifications) %init(pullToDismissNotificationsGroup);
+			if(oneListNotifications) %init(oneListNotificationsGroup);
+			if(easyNotificationSwiping) %init(easyNotificationSwipingGroup);
+			if(hideNoOlderNotifications) %init(hideNoOlderNotificationsGroup);
+			if(showExactTimePassed) %init(showExactTimePassedGroup);
+			%init(colorizeNotificationsGroup);
 		}
-
-		if(pullToDismissNotifications) %init(pullToDismissNotificationsGroup);
-		if(oneListNotifications) %init(oneListNotificationsGroup);
-		if(easyNotificationSwiping) %init(easyNotificationSwipingGroup);
-		if(hideNoOlderNotifications) %init(hideNoOlderNotificationsGroup);
-		if(showExactTimePassed) %init(showExactTimePassedGroup);
-		%init(colorizeNotificationsGroup);
 	}
 }

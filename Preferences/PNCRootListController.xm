@@ -13,16 +13,16 @@
         PNCAppearanceSettings *appearanceSettings = [[PNCAppearanceSettings alloc] init];
         self.hb_appearanceSettings = appearanceSettings;
         self.respringButton = [[UIBarButtonItem alloc] initWithTitle: @"Respring" style: UIBarButtonItemStylePlain target: self action: @selector(respring)];
-        self.respringButton.tintColor = [UIColor blackColor];
+        self.respringButton.tintColor = [UIColor whiteColor];
         self.navigationItem.rightBarButtonItem = self.respringButton;
 
         self.navigationItem.titleView = [UIView new];
         self.titleLabel = [[UILabel alloc] init];
         self.titleLabel.font = [UIFont boldSystemFontOfSize: 17];
         self.titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        self.titleLabel.text = @"PerfectNotifications13";
+        self.titleLabel.text = @"PerfectNotifications";
 		self.titleLabel.alpha = 0.0;
-        self.titleLabel.textColor = [UIColor blackColor];
+        self.titleLabel.textColor = [UIColor whiteColor];
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
         [self.navigationItem.titleView addSubview: self.titleLabel];
 
@@ -44,22 +44,7 @@
     CGRect frame = self.table.bounds;
     frame.origin.y = -frame.size.height;
 
-    self.navigationController.navigationController.navigationBar.barTintColor = [UIColor colorWithRed:1.00 green:0.58 blue:0.00 alpha:1.0];
-    [self.navigationController.navigationController.navigationBar setShadowImage: [UIImage new]];
-    self.navigationController.navigationController.navigationBar.tintColor = [UIColor blackColor];
-    self.navigationController.navigationController.navigationBar.translucent = NO;
-}
-
-- (void)viewDidAppear: (BOOL)animated
-{
-    [super viewDidAppear: animated];
-    [self.navigationController.navigationController.navigationBar setTitleTextAttributes: @{NSForegroundColorAttributeName : [UIColor blackColor]}];
-}
-
-- (void)viewWillDisappear: (BOOL)animated
-{
-    [super viewWillDisappear: animated];
-    [self.navigationController.navigationController.navigationBar setTitleTextAttributes: @{NSForegroundColorAttributeName : [UIColor blackColor]}];
+    self.navigationController.navigationController.navigationBar.tintColor = [UIColor whiteColor];
 }
 
 - (void)scrollViewDidScroll: (UIScrollView*)scrollView
@@ -77,7 +62,7 @@
 - (void)reset: (PSSpecifier*)specifier
 {
     UIAlertController *reset = [UIAlertController
-        alertControllerWithTitle: @"PerfectNotifications13"
+        alertControllerWithTitle: @"PerfectNotifications"
 		message: @"Do you really want to Reset All Settings?"
 		preferredStyle: UIAlertControllerStyleAlert];
 	UIAlertAction *confirmAction = [UIAlertAction actionWithTitle: @"Confirm" style: UIAlertActionStyleDestructive handler:

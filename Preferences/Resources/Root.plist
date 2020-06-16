@@ -15,6 +15,22 @@
 		<dict>
         	<key>cell</key>
 			<string>PSGroupCell</string>
+        </dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.perfectnotifications13prefs</string>
+			<key>key</key>
+			<string>enabled</string>
+			<key>label</key>
+			<string>Enabled</string>
+		</dict>
+		<dict>
+        	<key>cell</key>
+			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>GENERAL OPTIONS</string>
         </dict>
@@ -133,6 +149,32 @@
         	<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
+			<string>BACKGROUND ALPHA</string>
+        </dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>default</key>
+			<integer>1</integer>
+			<key>defaults</key>
+			<string>com.johnzaro.perfectnotifications13prefs</string>
+			<key>key</key>
+			<string>backgroundAlpha</string>
+			<key>isSegmented</key>
+			<true/>
+			<key>segmentCount</key>
+			<integer>10</integer>
+			<key>min</key>
+			<integer>0</integer>
+			<key>max</key>
+			<integer>1</integer>
+			<key>showValue</key>
+			<true/>
+		</dict>
+		<dict>
+        	<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
 			<string>NOTIFICATION TEXT</string>
         </dict>
 		<dict>
@@ -235,25 +277,53 @@
         	<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
+			<string>BORDER ALPHA</string>
+        </dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>default</key>
+			<integer>1</integer>
+			<key>defaults</key>
+			<string>com.johnzaro.perfectnotifications13prefs</string>
+			<key>key</key>
+			<string>borderAlpha</string>
+			<key>isSegmented</key>
+			<true/>
+			<key>segmentCount</key>
+			<integer>10</integer>
+			<key>min</key>
+			<integer>0</integer>
+			<key>max</key>
+			<integer>1</integer>
+			<key>showValue</key>
+			<true/>
+		</dict>
+		<dict>
+        	<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
 			<string>BORDER WIDTH</string>
         </dict>
 		<dict>
-			<key>cellClass</key>
-			<string>HBStepperTableCell</string>
+			<key>cell</key>
+			<string>PSSliderCell</string>
 			<key>default</key>
-			<real>3</real>
+			<integer>3</integer>
 			<key>defaults</key>
 			<string>com.johnzaro.perfectnotifications13prefs</string>
 			<key>key</key>
 			<string>borderWidth</string>
-			<key>label</key>
-			<string>%i Pixels</string>
-			<key>singularLabel</key>
-			<string>1 Pixel</string>
-			<key>max</key>
-			<real>8</real>
+			<key>isSegmented</key>
+			<true/>
+			<key>segmentCount</key>
+			<integer>7</integer>
 			<key>min</key>
-			<real>1</real>
+			<integer>1</integer>
+			<key>max</key>
+			<integer>8</integer>
+			<key>showValue</key>
+			<true/>
 		</dict>
 		<dict>
         	<key>cell</key>
@@ -262,22 +332,72 @@
 			<string>NOTIFICATION CORNER RADIUS</string>
         </dict>
 		<dict>
-			<key>cellClass</key>
-			<string>HBStepperTableCell</string>
+			<key>cell</key>
+			<string>PSSliderCell</string>
 			<key>default</key>
-			<real>12</real>
+			<integer>12</integer>
 			<key>defaults</key>
 			<string>com.johnzaro.perfectnotifications13prefs</string>
 			<key>key</key>
 			<string>notificationCorner</string>
-			<key>label</key>
-			<string>%i Pixels</string>
-			<key>singularLabel</key>
-			<string>1 Pixel</string>
-			<key>max</key>
-			<real>50</real>
+			<key>isSegmented</key>
+			<true/>
+			<key>segmentCount</key>
+			<integer>50</integer>
 			<key>min</key>
-			<real>0</real>
+			<integer>0</integer>
+			<key>max</key>
+			<integer>50</integer>
+			<key>showValue</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.perfectnotifications13prefs</string>
+			<key>key</key>
+			<string>disableTopLeftCornerRadius</string>
+			<key>label</key>
+			<string>No Top Left Round Corner</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.perfectnotifications13prefs</string>
+			<key>key</key>
+			<string>disableTopRightCornerRadius</string>
+			<key>label</key>
+			<string>No Top Right Round Corner</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.perfectnotifications13prefs</string>
+			<key>key</key>
+			<string>disableBottomLeftCornerRadius</string>
+			<key>label</key>
+			<string>No Bottom Left Round Corner</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.perfectnotifications13prefs</string>
+			<key>key</key>
+			<string>disableBottomRightCornerRadius</string>
+			<key>label</key>
+			<string>No Bottom Right Round Corner</string>
 		</dict>
 		<dict>
         	<key>cell</key>
@@ -307,8 +427,26 @@
 			<key>icon</key>
 			<string>github.png</string>
 			<key>url</key>
-   	 		<string>https://github.com/johnzaro/PerfectNotifications13</string>
+   	 		<string>https://github.com/johnzaro/PerfectNotifications</string>
 		</dict>
+		<dict>
+        	<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>SPECIAL THANKS - ICON AND BANNER DESIGNER</string>
+        </dict>
+		<dict>
+			<key>big</key>
+    		<true/>
+            <key>cellClass</key>
+            <string>HBTwitterCell</string>
+			<key>height</key>
+    		<integer>56</integer>
+            <key>label</key>
+            <string>𝐑 *¡!</string>
+            <key>user</key>
+            <string>rsxyo</string>
+        </dict>
  		<dict>
         	<key>cell</key>
 			<string>PSGroupCell</string>
@@ -353,14 +491,12 @@
 			<key>cellClass</key>
 			<string>HBLinkTableCell</string>
 			<key>label</key>
-			<string>Like my work? Buy me a coffee :)</string>
+			<string>Like my work? Buy me a coffee</string>
 			<key>icon</key>
 			<string>donate.png</string>
 			<key>url</key>
    	 		<string>https://paypal.me/JohnZarogiannis</string>
         </dict>
 	</array>
-	<key>title</key>
-	<string>perfectappswitcher13</string>
 </dict>
 </plist>
