@@ -28,7 +28,8 @@ static BOOL disableTopRightCornerRadius;
 static BOOL disableBottomLeftCornerRadius;
 static BOOL disableBottomRightCornerRadius;
 
-int cornerMask = 0;
+static NSDateFormatter *dateFormatter;
+static NSInteger cornerMask = 0;
 
 // --------------------------------------------------------------------------
 // --------------------- METHODS FOR CHOOSING COLORS ------------------------
@@ -212,9 +213,6 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 			BSUIRelativeDateLabel *dateLabel = MSHookIvar<BSUIRelativeDateLabel*> (self, "_dateLabel");
 			int timeSinceNow = (int)[date timeIntervalSinceNow];
 
-			NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-			[dateFormatter setDateFormat: @"HH:mm"];
-			
 			bool isFuture = false;
 			if (timeSinceNow > 0) isFuture = true;
 			else timeSinceNow = timeSinceNow * -1;
@@ -542,11 +540,31 @@ static UIColor *getContrastColorBasedOnBackgroundColor(UIColor *backgroundColor)
 
 			}
 
-			if(pullToDismissNotifications) %init(pullToDismissNotificationsGroup);
-			if(oneListNotifications) %init(oneListNotificationsGroup);
-			if(easyNotificationSwiping) %init(easyNotificationSwipingGroup);
-			if(hideNoOlderNotifications) %init(hideNoOlderNotificationsGroup);
-			if(showExactTimePassed) %init(showExactTimePassedGroup);
+			if(pullToDismissNotifications)
+				%init(pullToDismissNotificationsGroup);
+			if(oneListNotifications)
+				%init(oneListNotificationsGroup);
+			if(easyNotificationSwiping) 
+				%init(easyNotificationSwipingGroup);
+			if(hideNoOlderNotifications)
+				%init(hideNoOlderNotificationsGroup);
+			if(showExactTimePassed)
+			{
+				dateFormatter = [[NSDateFormatter alloc] init];
+
+				NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+				[formatter setLocale: [NSLocale currentLocale]];
+				[formatter setDateStyle: NSDateFormatterNoStyle];
+				[formatter setTimeStyle: NSDateFormatterShortStyle];
+				NSString *dateString = [formatter stringFromDate: [NSDate date]];
+				if([dateString rangeOfString: [formatter AMSymbol]].location == NSNotFound && [dateString rangeOfString: [formatter PMSymbol]].location == NSNotFound)
+					[dateFormatter setDateFormat: @"HH:mm"];
+				else
+					[dateFormatter setDateFormat: @"h:mm a"];
+				
+				%init(showExactTimePassedGroup);
+			}	
+			
 			%init(colorizeNotificationsGroup);
 		}
 	}
