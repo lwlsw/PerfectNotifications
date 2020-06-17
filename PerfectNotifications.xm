@@ -39,9 +39,10 @@ static UIColor *getReadableTextColorBasedOnBackgroundColor(UIColor *backgroundCo
 {
     int d = 0;
 	const CGFloat *rgb = CGColorGetComponents(backgroundColor.CGColor);
-    double luminance = ( 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+    // double luminance = ( 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+    double luminance = ( rgb[0] + rgb[1] + rgb[2]) / 255;
 
-    if (luminance > 0.5) d = 0;
+    if (luminance > 0.0075) d = 0;
     else d = 1;
 
     return  [UIColor colorWithRed: d green: d blue: d alpha: 1];
